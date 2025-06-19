@@ -2,7 +2,7 @@ import datetime
 
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Medicine
+# from .models import Medicine
 
 # Create your views here.
 def server_status(request):
@@ -24,21 +24,4 @@ def schedule(request):
     return JsonResponse({"TODO": ""})
 
 def update_medicine_status(request, medicine_id):
-    try:
-        medicine = Medicine.objects.get(medicine_id=medicine_id)
-        medicine.status = 'taken'
-        medicine.save()
-        return JsonResponse({
-            'status': 'ok',
-            'medicine_id': medicine_id,
-        })
-    except Medicine.DoesNotExist:
-        return JsonResponse({
-            'status': 'error',
-            'medicine_id': medicine_id,
-        })
-    except Exception as e:
-        return JsonResponse({
-            'status': 'error',
-            'medicine_id': medicine_id,
-        })
+    return JsonReoinse({"TODO": ""})
