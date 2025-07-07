@@ -2,7 +2,7 @@ import datetime
 
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Medicine
+# from .models import Medicine
 
 # Create your views here.
 def server_status(request):
