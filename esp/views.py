@@ -23,7 +23,8 @@ def server_time(request):
 
 def server_configured(request):
     if len(deviceConfigurations.objects.all()) != 0:
-        return JsonResponse({'status': 'NOT OK'})
+        obj = deviceConfigurations.objects.get(pk=1)
+        return JsonResponse({'status': 'NOT OK', 'slots_count': obj.slots_count})
     return JsonResponse({'status': 'OK'})
 
 def get_current_medicines(request):
