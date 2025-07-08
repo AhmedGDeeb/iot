@@ -38,21 +38,44 @@ def get_current_medicines(request):
     ).order_by('-medicine_date')
     
     # Prepare the response data
-    medicine_data = []
-    for med in medicines:
-        medicine_data.append({
-            'medicine_id': med.medicine_id,
-            'medicine_name': med.medicine_name,
-            'year': med.medicine_date.year,
-            'day': med.medicine_date.day,
-            'hour': med.medicine_date.hour,
-            'minute': med.medicine_date.minute,
-            'slot_number': med.slot_number,
-            'status': med.status
-        })
-    
+    # medicine_data = []
+    # for med in medicines:
+    #     medicine_data.append({
+    #         'medicine_id': med.medicine_id,
+    #         'medicine_name': med.medicine_name,
+    #         'year': med.medicine_date.year,
+    #         'month': med.medicine_date.month,
+    #         'day': med.medicine_date.day,
+    #         'hour': med.medicine_date.hour,
+    #         'minute': med.medicine_date.minute,
+    #         'slot_number': med.slot_number,
+    #         'status': med.status
+    #     })
+
     # Return as JSON response
-    return JsonResponse({'medicines': medicine_data}, safe=False)
+    # return JsonResponse({'medicines': medicine_data}, safe=False)
+    
+    # Prepare the response data
+    if(len(medicines) > 0):
+        med = medicines[0]
+        return JsonResponse(
+            {
+                'count': len(medicines),
+                'medicine_id': med.medicine_id,
+                'medicine_name': med.medicine_name,
+                'year': med.medicine_date.year,
+                'month': med.medicine_date.month,
+                'day': med.medicine_date.day,
+                'hour': med.medicine_date.hour,
+                'minute': med.medicine_date.minute,
+                'slot_number': med.slot_number,
+                'status': med.status}, 
+            safe=False)
+    else:
+        return JsonResponse(
+            {'count': len(medicines)}, 
+            safe=False)
+    
 
 def update_medicine_status(request, medicine_id):
     try:
