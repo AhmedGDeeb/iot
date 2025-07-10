@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
 
 class deviceConfigurations(models.Model):
     @classmethod
@@ -24,6 +25,13 @@ class deviceConfigurations(models.Model):
     
     
 class Medicine(models.Model):
+    FREQUENCY_CHOICES = [
+        ('once', 'once'),
+        ('daily', 'daily'),
+        ('weekly', 'weekly'),
+        ('hourly', 'hourly'),
+    ]
+
     STATUS_CHOICES = [
         ('SCHEDULED', 'SCHEDULED'),
         ('SENT', 'SENT'),
@@ -41,9 +49,72 @@ class Medicine(models.Model):
         choices=STATUS_CHOICES,
         default='SCHEDULED'
     )
+    frequency = models.CharField(
+        max_length=10, 
+        choices=FREQUENCY_CHOICES, 
+        default='once'
+    )
+
+    repeat_until = models.DateTimeField(blank=True, null=True)
+    is_recurring = models.BooleanField(default=False)
+
+    def clean(self):
+        if self.is_recurring and not self.repeat_until:
+            raise ValidationError("Repeat until date is required for recurring events")
+        if self.repeat_until and self.repeat_until < self.medicine_date:
+            raise ValidationError("Repeat until date must be after start date")
+    
+    def save(self, *args, **kwargs):
+        self.is_recurring = self.frequency != 'once'
+        super().save(*args, **kwargs)
+        if self.is_recurring:
+            self.generate_recurring_events()
+
+    def generate_recurring_events(self):
+        from datetime import timedelta
+        
+        # Delete existing generated events for this series
+        Medicine.objects.filter(
+            original_event=self,
+            is_generated=True
+        ).delete()
+        
+        if not self.is_recurring:
+            return
+            
+        current = self.medicine_date
+        delta = None
+        
+        if self.frequency == 'daily':
+            delta = timedelta(days=1)
+        elif self.frequency == 'weekly':
+            delta = timedelta(weeks=1)
+        elif self.frequency == 'hourly':
+            delta = timedelta(hours=1)
+        
+        while current <= self.repeat_until:
+            if current != self.medicine_date:  # Don't recreate the original
+                Medicine.objects.create(
+                    medicine_name=self.medicine_name,
+                    medicine_date=current,
+                    slot_number=self.slot_number,
+                    original_event=self,
+                    is_generated=True,
+                    frequency='once'  # Generated events shouldn't recur
+                )
+            current += delta
+    
+    original_event = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='generated_events'
+    )
+    is_generated = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.medicine_name}@{self.medicine_id} - {self.medicine_date} - slot: {self.slot_number} - status: {self.status}"
+        return f"{self.medicine_name}@{self.medicine_id} - {self.medicine_date} - slot: {self.slot_number} - status: {self.status} - frequency: {self.frequency}"
 
     class Meta:
         ordering = ['-medicine_date']
