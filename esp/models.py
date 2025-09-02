@@ -27,9 +27,10 @@ class deviceConfigurations(models.Model):
 class Medicine(models.Model):
     FREQUENCY_CHOICES = [
         ('once', 'once'),
-        ('daily', 'daily'),
-        ('weekly', 'weekly'),
-        ('hourly', 'hourly'),
+        ('days', 'days'),
+        ('weeks', 'weeks'),
+        ('hours', 'hours'),
+        ('minutes', 'minutes'),
     ]
 
     STATUS_CHOICES = [
@@ -54,7 +55,7 @@ class Medicine(models.Model):
         choices=FREQUENCY_CHOICES, 
         default='once'
     )
-
+    times_to_repeat = models.IntegerField(default='0', blank=False, null=False)
     repeat_until = models.DateTimeField(blank=True, null=True)
     is_recurring = models.BooleanField(default=False)
 
@@ -85,12 +86,14 @@ class Medicine(models.Model):
         current = self.medicine_date
         delta = None
         
-        if self.frequency == 'daily':
-            delta = timedelta(days=1)
-        elif self.frequency == 'weekly':
-            delta = timedelta(weeks=1)
-        elif self.frequency == 'hourly':
-            delta = timedelta(hours=1)
+        if self.frequency == 'days':
+            delta = timedelta(days=1) * self.times_to_repeat
+        elif self.frequency == 'weeks':
+            delta = timedelta(weeks=1) * self.times_to_repeat
+        elif self.frequency == 'hours':
+            delta = timedelta(hours=1) * self.times_to_repeat
+        elif self.frequency == 'minutes':
+            delta = timedelta(minutes=1) * self.times_to_repeat
         
         while current <= self.repeat_until:
             if current != self.medicine_date:  # Don't recreate the original

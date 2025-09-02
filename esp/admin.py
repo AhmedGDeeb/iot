@@ -19,6 +19,7 @@ class MedicineAdminForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         frequency = cleaned_data.get('frequency')
+        frequency = cleaned_data.get('times_to_repeat')
         repeat_until = cleaned_data.get('repeat_until')
         
         if frequency != 'once' and not repeat_until:
@@ -37,7 +38,7 @@ class EventAdmin(admin.ModelAdmin):
             'fields': ('medicine_name', 'medicine_date', 'slot_number', 'status')
         }),
         ('Recurrence', {
-            'fields': ('frequency', 'repeat_until'),
+            'fields': ('frequency', 'times_to_repeat', 'repeat_until'),
             'classes': ('collapse',)
         }),
     )
@@ -51,5 +52,5 @@ class EventAdmin(admin.ModelAdmin):
     
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.is_generated:
-            return ['medicine_name', 'medicine_date', 'end_datetime', 'frequency', 'repeat_until']
+            return ['medicine_name', 'medicine_date', 'end_datetime', 'frequency', 'times_to_repeat', 'repeat_until']
         return super().get_readonly_fields(request, obj)
