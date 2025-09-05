@@ -33,7 +33,7 @@ def get_current_medicines(request):
     # Query medicines with future dates and specified statuses
     medicines = Medicine.objects.filter(
         medicine_date__gt=now,
-        medicine_date__lt=now+datetime.timedelta(minutes=1),
+        medicine_date__lt=now+datetime.timedelta(hours=3, minutes=1),
         status__in=['SCHEDULED', 'SENT']  # Only these statuses
     ).order_by('-medicine_date')
     
@@ -58,6 +58,8 @@ def get_current_medicines(request):
     # Prepare the response data
     if(len(medicines) > 0):
         med = medicines[0]
+        med.status = "SENT"
+        med.save()
         return JsonResponse(
             {
                 'count': len(medicines),

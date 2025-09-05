@@ -19,7 +19,7 @@ class MedicineAdminForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         frequency = cleaned_data.get('frequency')
-        frequency = cleaned_data.get('times_to_repeat')
+        times_to_repeat = cleaned_data.get('times_to_repeat')
         repeat_until = cleaned_data.get('repeat_until')
         
         if frequency != 'once' and not repeat_until:
@@ -31,7 +31,7 @@ class MedicineAdminForm(forms.ModelForm):
 @admin.register(Medicine)
 class EventAdmin(admin.ModelAdmin):
     form = MedicineAdminForm
-    list_display = ('medicine_name', 'medicine_date', 'slot_number', 'frequency', 'is_recurring')
+    list_display = ('medicine_name', 'medicine_date', 'slot_number', 'times_to_repeat', 'frequency', 'is_recurring')
     list_filter = ('medicine_name', 'medicine_date', 'slot_number', 'status', 'frequency', 'is_recurring')
     fieldsets = (
         (None, {
